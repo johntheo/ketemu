@@ -23,8 +23,6 @@ Built with **Java + Spring Boot**, **Kafka**, **PostgreSQL**, **Redis**, and **D
 ## 🧱 Architecture Overview
 
 ```
-
-```
          +-----------------+
          |    API Gateway  |
          +--------+--------+
@@ -135,5 +133,3 @@ Repeat for the remaining services.
 **Ketemu Platform — Built by John Theo**
 Senior Java Developer / Engineering Manager
 Barcelona, Spain
-
-```
