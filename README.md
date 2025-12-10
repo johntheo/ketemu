@@ -23,6 +23,8 @@ Built with **Java + Spring Boot**, **Kafka**, **PostgreSQL**, **Redis**, and **D
 ## 🧱 Architecture Overview
 
 ```
+
+```
          +-----------------+
          |    API Gateway  |
          +--------+--------+
