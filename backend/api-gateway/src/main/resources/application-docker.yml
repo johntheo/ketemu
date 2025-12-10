@@ -1,0 +1,43 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      routes:
+        - id: auth
+          uri: http://auth-service:8080
+          predicates:
+            - Path=/auth/**
+
+        - id: events
+          uri: http://event-service:8080
+          predicates:
+            - Path=/events/**
+
+        - id: orders
+          uri: http://order-service:8080
+          predicates:
+            - Path=/orders/**
+
+        - id: tickets
+          uri: http://ticket-service:8080
+          predicates:
+            - Path=/tickets/**
+
+        - id: contacts
+          uri: http://contact-service:8080
+          predicates:
+            - Path=/contacts/**
+
+        - id: notifications
+          uri: http://notification-service:8080
+          predicates:
+            - Path=/notifications/**
+
+logging:
+  level:
+    "[org.springframework.cloud.gateway]": DEBUG

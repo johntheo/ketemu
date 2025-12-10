@@ -1,0 +1,18 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ticket-service
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/ketemu
+    username: ketemu
+    password: ketemu
+
+  kafka:
+    bootstrap-servers: kafka:19092
+
+logging:
+  level:
+    "[io.ketemu.ticket]": DEBUG

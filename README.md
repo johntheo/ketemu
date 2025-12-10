@@ -1,5 +1,6 @@
-# ketemu – Conference Ticketing & Networking Platform  
-*A microservices-based system for events, ticketing, QR check-in, and attendee networking.*
+# ketemu – Conference Ticketing & Networking Platform
+
+_A microservices-based system for events, ticketing, QR check-in, and attendee networking._
 
 Ketemu (from Javanese: **"to meet"**) is a fully containerized backend platform for conferences.  
 It provides ticketing, agenda management, QR-based check-in, and a unique QR-powered contact exchange system.
@@ -23,63 +24,89 @@ Built with **Java + Spring Boot**, **Kafka**, **PostgreSQL**, **Redis**, and **D
 ## 🧱 Architecture Overview
 
 ```
-         +-----------------+
-         |    API Gateway  |
-         +--------+--------+
-                  |
-+---------+--------+--------+----------+
-|         |                   |         |
-+--+--+  +---+----+        +-----+----+ +--+------+
-|Auth |  |Event   |        |Order     | |Contact  |
-|Srv  |  |Service |        |Service   | |Service  |
-+-----+  +--------+        +----------+ +---------+
-|
-+----+------+
-| Ticket    |
-| Service   |
-+-----------+
-|
-+-----+--------+
-| Notification |
-|   Service    |
-+--------------+
+                        +------------------+
+                        |    Clients       |
+                        | (Web / Mobile)   |
+                        +--------+---------+
+                                 |
+                                 v
+                        +------------------+
+                        |   API Gateway    |
+                        +--------+---------+
+                                 |
+         ------------------------------------------------
+         |                |                |            |
+         v                v                v            v
++----------------+  +-----------+   +--------------+  +----------------+
+|  Auth Service  |  | Event     |   | Order        |  | Contact        |
+| (users, roles, |  | Service   |   | Service      |  | Service        |
+|  JWT)          |  | (conf,    |   | (orders,     |  | (contact card, |
+|                |  | agenda)   |   | payment sim) |  | QR networking) |
++----------------+  +-----------+   +--------------+  +----------------+
+                                        |
+                                        v
+                                +----------------+
+                                | Ticket Service |
+                                | (tickets, QR,  |
+                                |  check-in)     |
+                                +----------------+
+                                        |
+                                        v
+                                +--------------------+
+                                | Notification       |
+                                | Service            |
+                                | (events consumer)  |
+                                +--------------------+
 
-Infra: PostgreSQL • Redis • Kafka • Zookeeper • Docker
+
+Infra (shared):
+  - PostgreSQL (vários bancos ou schemas)
+  - Redis (cache: agenda, contact cards)
+  - Kafka + Zookeeper (eventos: OrderPaid, TicketCheckedIn, ContactExchanged)
+
 ```
+
 ---
 
 ## 🧩 Microservices
 
 ### **API Gateway**
+
 - Routes all client traffic
 - Validates JWT tokens
 
 ### **Auth Service**
+
 - User registration, login, roles
 - JWT authentication
 
 ### **Event Service**
+
 - Conferences, sessions, speakers
-- Ticket types  
+- Ticket types
 - Agenda with Redis caching
 
 ### **Order Service**
+
 - Ticket orders
 - Simulated payment
 - Publishes `OrderPaid` events (Kafka)
 
 ### **Ticket Service**
+
 - Consumes `OrderPaid`
 - Generates QR-coded tickets (ZXing)
-- Check-in workflow  
+- Check-in workflow
 - Publishes `TicketCheckedIn`
 
 ### **Contact Service**
+
 - User contact cards
 - QR-based networking
 - Publishes `ContactExchanged`
 
 ### **Notification Service**
+
 - Consumes domain events
 - Logs or stores simple notifications
 
@@ -87,21 +114,22 @@ Infra: PostgreSQL • Redis • Kafka • Zookeeper • Docker
 
 ## 🧠 Tech Stack
 
-- **Java 21**, Spring Boot 3.x  
-- Spring Web, Data JPA, Security, Kafka, Cache  
-- **PostgreSQL**, **Redis**, **Kafka**  
-- **ZXing** (QR code generation)  
-- **Docker & Docker Compose**  
-- DDD + Hexagonal Architecture  
+- **Java 21**, Spring Boot 3.x
+- Spring Web, Data JPA, Security, Kafka, Cache
+- **PostgreSQL**, **Redis**, **Kafka**
+- **ZXing** (QR code generation)
+- **Docker & Docker Compose**
+- DDD + Hexagonal Architecture
 
 ---
 
 ## 🐳 Running the Project
 
 ### 1. Start infrastructure
+
 ```bash
 docker-compose up -d
-````
+```
 
 ### 2. Start services (example)
 
@@ -116,11 +144,11 @@ Repeat for the remaining services.
 
 ## 🛠️ Future Enhancements
 
-* Real payment gateway (Stripe sandbox)
-* Admin portal
-* Analytics & dashboards
-* Mobile app
-* Real-time notifications
+- Real payment gateway (Stripe sandbox)
+- Admin portal
+- Analytics & dashboards
+- Mobile app
+- Real-time notifications
 
 ---
 
