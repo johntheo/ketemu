@@ -1,159 +1,183 @@
-# ketemu – Conference Ticketing & Networking Platform
+<div align="center">
 
-_A microservices-based system for events, ticketing, QR check-in, and attendee networking._
+# 🤝 Ketemu
 
-Ketemu (from Javanese: **"to meet"**) is a fully containerized backend platform for conferences.  
-It provides ticketing, agenda management, QR-based check-in, and a unique QR-powered contact exchange system.
+### Conference & Networking Platform
 
-Built with **Java + Spring Boot**, **Kafka**, **PostgreSQL**, **Redis**, and **Docker**, following **DDD** and **Hexagonal Architecture**.
+[![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=java)](https://docs.oracle.com/en/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-4-brightgreen?style=for-the-badge&logo=spring)](https://spring.io/projects/spring-boot)
+[![Docker](https://img.shields.io/badge/Docker-Enabled-blue?style=for-the-badge&logo=docker)](https://www.docker.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
----
+**Ketemu** is a conference management and networking platform built as a **Java microservices** portfolio project. The name is a nod to its roots: "Ketemu" means "to meet" in Javanese (spoken on the island of Java), bridging the concept of social networking with the **Java** language that powers it.
+It simulates a real-world system for managing conferences, tickets, networking via QR codes, and cross-service notifications.
 
-## 🚀 Features
-
-- **Authentication & User Profiles** (JWT)
-- **Conference & Session Management**
-- **Ticket Purchasing Flow**
-- **QR Code Ticket Issuance**
-- **QR Check-In Workflow**
-- **QR-based Contact Exchange** between attendees/exhibitors/speakers
-- **Notifications**
+</div>
 
 ---
 
-## 🧱 Architecture Overview
+## 📑 Table of Contents
 
-```
-                        +------------------+
-                        |    Clients       |
-                        | (Web / Mobile)   |
-                        +--------+---------+
-                                 |
-                                 v
-                        +------------------+
-                        |   API Gateway    |
-                        +--------+---------+
-                                 |
-         ------------------------------------------------
-         |                |                |            |
-         v                v                v            v
-+----------------+  +-----------+   +--------------+  +----------------+
-|  Auth Service  |  | Event     |   | Order        |  | Contact        |
-| (users, roles, |  | Service   |   | Service      |  | Service        |
-|  JWT)          |  | (conf,    |   | (orders,     |  | (contact card, |
-|                |  | agenda)   |   | payment sim) |  | QR networking) |
-+----------------+  +-----------+   +--------------+  +----------------+
-                                        |
-                                        v
-                                +----------------+
-                                | Ticket Service |
-                                | (tickets, QR,  |
-                                |  check-in)     |
-                                +----------------+
-                                        |
-                                        v
-                                +--------------------+
-                                | Notification       |
-                                | Service            |
-                                | (events consumer)  |
-                                +--------------------+
-
-
-Infra (shared):
-  - PostgreSQL (vários bancos ou schemas)
-  - Redis (cache: agenda, contact cards)
-  - Kafka + Zookeeper (eventos: OrderPaid, TicketCheckedIn, ContactExchanged)
-
-```
+- [Architecture Overview](#-architecture-overview)
+- [Tech Stack](#-tech-stack)
+- [High-Level Architecture](#-high-level-architecture)
+- [How to Run](#-how-to-run-docker-compose)
+- [Example End-to-End Flow](#-example-end-to-end-flow-short-version)
+- [What This Project Demonstrates](#-what-this-project-demonstrates)
+- [Future Improvements](#-possible-next-steps)
+- [Author](#-author)
 
 ---
 
-## 🧩 Microservices
+## 🧩 Architecture Overview
 
-### **API Gateway**
+The system is composed of several Spring Boot microservices, orchestrated via **Docker Compose** and using **PostgreSQL** for persistence.
 
-- Routes all client traffic
-- Validates JWT tokens
+| Service                  | Description                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------- |
+| **API Gateway**          | Single entrypoint via Spring Cloud Gateway. Routes traffic to backend services. |
+| **Auth Service**         | User registration, login, and JWT-based authentication.                         |
+| **Event Service**        | Manages conferences, sessions, and ticket types. Uses Redis caching.            |
+| **Order Service**        | Handles ticket purchases and payments. Publishes `order-paid` events.           |
+| **Ticket Service**       | Consumes events to generated tickets and QR codes. Supports check-in.           |
+| **Contact Service**      | Manages digital contact cards and networking exchanges.                         |
+| **Notification Service** | Aggregates domain events (payment, networking, check-in) into notifications.    |
 
-### **Auth Service**
+## 🛠 Tech Stack
 
-- User registration, login, roles
-- JWT authentication
+- **Core**: Java 21, Spring Boot 3
+- **Gateway**: Spring Cloud Gateway
+- **Web**: Spring Web / WebFlux
+- **Data**: Spring Data JPA, PostgreSQL, Spring Data Redis
+- **Messaging**: Spring Kafka
+- **Security**: Spring Security & JWT (io.jsonwebtoken)
+- **Tooling**: Docker, Docker Compose, Spring Boot Actuator, ZXing
 
-### **Event Service**
+## 🏗 High-Level Architecture
 
-- Conferences, sessions, speakers
-- Ticket types
-- Agenda with Redis caching
+```mermaid
+graph TD
+    User((User / Client))
+    Gateway[API Gateway]
 
-### **Order Service**
+    subgraph Services [Microservices]
+        Auth[Auth Service]
+        Event[Event Service]
+        Order[Order Service]
+        Ticket[Ticket Service]
+        Contact[Contact Service]
+        Notif[Notification Service]
+    end
 
-- Ticket orders
-- Simulated payment
-- Publishes `OrderPaid` events (Kafka)
+    User -->|HTTP| Gateway
+    Gateway -->|/auth| Auth
+    Gateway -->|/events| Event
+    Gateway -->|/orders| Order
+    Gateway -->|/tickets| Ticket
+    Gateway -->|/contacts| Contact
+    Gateway -->|/notifications| Notif
 
-### **Ticket Service**
-
-- Consumes `OrderPaid`
-- Generates QR-coded tickets (ZXing)
-- Check-in workflow
-- Publishes `TicketCheckedIn`
-
-### **Contact Service**
-
-- User contact cards
-- QR-based networking
-- Publishes `ContactExchanged`
-
-### **Notification Service**
-
-- Consumes domain events
-- Logs or stores simple notifications
-
----
-
-## 🧠 Tech Stack
-
-- **Java 21**, Spring Boot 3.x
-- Spring Web, Data JPA, Security, Kafka, Cache
-- **PostgreSQL**, **Redis**, **Kafka**
-- **ZXing** (QR code generation)
-- **Docker & Docker Compose**
-- DDD + Hexagonal Architecture
-
----
-
-## 🐳 Running the Project
-
-### 1. Start infrastructure
-
-```bash
-docker-compose up -d
+    %% Kafka Events
+    Order -.->|Order Paid| Ticket
+    Order -.->|Order Paid| Notif
+    Ticket -.->|Check-in| Notif
+    Contact -.->|Exchange| Notif
 ```
 
-### 2. Start services (example)
+> **Note:** All services utilize **PostgreSQL** for persistence and **Redis** for caching where applicable.
 
-```bash
-cd backend/auth-service
-mvn spring-boot:run
-```
+## 🚀 How to Run (Docker Compose)
 
-Repeat for the remaining services.
+### Prerequisites
 
----
+- **Docker** + **Docker Compose**
+- (Optional) **Java 21 + Maven** (for local development)
 
-## 🛠️ Future Enhancements
+### Steps
 
-- Real payment gateway (Stripe sandbox)
-- Admin portal
-- Analytics & dashboards
-- Mobile app
-- Real-time notifications
+1. **Build and start the services:**
 
----
+   ```bash
+   docker compose build
+   docker compose up -d
+   ```
+
+2. **Access the API Gateway:**
+   The gateway will be available at: `http://localhost:8080`
+
+3. **Verify Health:**
+
+   ```bash
+   # Check Gateway health
+   curl http://localhost:8080/actuator/health
+
+   # Check Conferences through Gateway
+   curl http://localhost:8080/events/conferences
+   ```
+
+## 🔄 Example End-to-End Flow (Short Version)
+
+1. **Register and Login**
+
+   - `POST /auth/register`
+   - `POST /auth/login` → Receive **JWT**
+   - `GET /auth/me` → Retrieve `userId`
+
+2. **Create a Conference**
+
+   - `POST /events/conferences`
+   - `POST /events/conferences/{id}/sessions`
+   - `POST /events/conferences/{id}/ticket-types`
+
+3. **Purchase a Ticket**
+
+   - `POST /orders` (with `userId`, `conferenceId`, `ticketTypeId`)
+   - Order status updates to `PAID`
+   - `order-paid` event published to Kafka
+
+4. **Ticket Generation**
+
+   - Ticket Service consumes `order-paid`
+   - Ticket created with QR code
+   - `GET /tickets/{ticketId}/qrcode` → Returns PNG
+
+5. **Event Check-in**
+
+   - Staff scans QR code: `POST /tickets/check-in`
+
+6. **Networking**
+
+   - `PUT /contacts/card` → Create contact card
+   - `POST /contacts/exchange` → Scan another user's QR to exchange details
+
+7. **Notifications**
+   - `GET /notifications` → See "Order Paid", "Contact Exchanged", etc.
+
+## 💼 What This Project Demonstrates
+
+From an engineering perspective, this project showcases:
+
+- ✅ **Microservice Boundaries**: Clear separation of concerns.
+- ✅ **API Security**: stateless JWT authentication.
+- ✅ **Event-Driven Architecture**: Decoupled services using Kafka.
+- ✅ **Caching**: Redis for performance optimization.
+- ✅ **Gateway Patterns**: Centralized routing and aggregation.
+- ✅ **Containerization**: Full Docker support for easy deployment.
+
+## 🧷 Possible Next Steps
+
+- [ ] Centralized JWT validation in the API Gateway (Sidecar pattern)
+- [ ] Observatory stack (Prometheus, Grafana, Zipkin)
+- [ ] Real email / push notifications
+- [ ] Web frontend (React/Angular/Vue)
 
 ## ✨ Author
 
-**Ketemu Platform — Built by John Theo**
-Senior Java Developer / Engineering Manager
-Barcelona, Spain
+**Ketemu Platform** — Built by **John Theo**  
+_Senior Java Developer / Engineering Manager_  
+📍 Barcelona, Spain
+
+---
+
+_License: [MIT](LICENSE)_
