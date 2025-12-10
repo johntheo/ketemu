@@ -44,8 +44,8 @@ Built with **Java + Spring Boot**, **Kafka**, **PostgreSQL**, **Redis**, and **D
 |   Service    |
 +--------------+
 
-```
 Infra: PostgreSQL • Redis • Kafka • Zookeeper • Docker
+```
 ---
 
 ## 🧩 Microservices
