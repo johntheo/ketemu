@@ -23,14 +23,10 @@ Built with **Java + Spring Boot**, **Kafka**, **PostgreSQL**, **Redis**, and **D
 ## 🧱 Architecture Overview
 
 ```
-
-```
          +-----------------+
          |    API Gateway  |
          +--------+--------+
                   |
-```
-
 +---------+--------+--------+----------+
 |         |                   |         |
 +--+--+  +---+----+        +-----+----+ +--+------+
@@ -48,10 +44,8 @@ Built with **Java + Spring Boot**, **Kafka**, **PostgreSQL**, **Redis**, and **D
 |   Service    |
 +--------------+
 
-Infra: PostgreSQL • Redis • Kafka • Zookeeper • Docker
-
 ```
-
+Infra: PostgreSQL • Redis • Kafka • Zookeeper • Docker
 ---
 
 ## 🧩 Microservices
